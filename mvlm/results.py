@@ -3,20 +3,48 @@ from __future__ import annotations
 import json
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 from mvlm.compare import ComparisonResult
 
+DATA_DIR = Path.home() / ".mvlm"
+
+
+def _get_project_file(project: str) -> Path:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in project)
+    return DATA_DIR / f"{safe_name}.json"
+
 
 def log_result(
+    project: str,
     baseline_model: str,
     baseline_content: str,
+    baseline_latency_ms: float,
+    baseline_input_tokens: int,
+    baseline_output_tokens: int,
+    baseline_cost: float | None,
     comparison: ComparisonResult,
-    log_file: str,
+    candidate_latency_ms: float,
+    candidate_input_tokens: int,
+    candidate_output_tokens: int,
+    candidate_cost: float | None,
 ) -> None:
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
+        "project": project,
         "baseline_model": baseline_model,
+        "baseline_content": baseline_content,
+        "baseline_latency_ms": round(baseline_latency_ms, 1),
+        "baseline_input_tokens": baseline_input_tokens,
+        "baseline_output_tokens": baseline_output_tokens,
+        "baseline_cost": baseline_cost,
         "candidate": comparison.candidate,
+        "candidate_content": None,
+        "candidate_latency_ms": round(candidate_latency_ms, 1),
+        "candidate_input_tokens": candidate_input_tokens,
+        "candidate_output_tokens": candidate_output_tokens,
+        "candidate_cost": candidate_cost,
         "score": comparison.score,
         "total_fields": comparison.total_fields,
         "matching_fields": comparison.matching_fields,
@@ -24,34 +52,38 @@ def log_result(
         "error": comparison.error,
     }
 
+    log_file = _get_project_file(project)
     existing = []
-    if os.path.exists(log_file):
+    if log_file.exists():
         try:
-            with open(log_file) as f:
-                existing = json.load(f)
+            existing = json.loads(log_file.read_text())
         except (json.JSONDecodeError, OSError):
             existing = []
 
     existing.append(entry)
-    with open(log_file, "w") as f:
-        json.dump(existing, f, indent=2, default=str)
+    log_file.write_text(json.dumps(existing, indent=2, default=str))
 
 
 def print_comparison(
     baseline_model: str,
+    baseline_latency_ms: float,
     comparisons: list[ComparisonResult],
+    candidate_latencies: dict[str, float],
 ) -> None:
     print(f"\n{'=' * 60}")
-    print(f"mvlm comparison — baseline: {baseline_model}")
+    print(f"mvlm comparison — baseline: {baseline_model} ({baseline_latency_ms:.0f}ms)")
     print(f"{'=' * 60}")
 
     for comp in comparisons:
+        latency = candidate_latencies.get(comp.candidate, 0)
         if comp.error:
             print(f"  {comp.candidate}: ERROR — {comp.error}")
         else:
             score_pct = f"{comp.score * 100:.0f}%" if comp.score is not None else "N/A"
             match_str = f"{len(comp.matching_fields)}/{comp.total_fields} fields"
-            print(f"  {comp.candidate}: {score_pct} match ({match_str})")
+            print(
+                f"  {comp.candidate}: {score_pct} match ({match_str}) [{latency:.0f}ms]"
+            )
             if comp.mismatched_fields:
                 for m in comp.mismatched_fields:
                     print(
@@ -62,27 +94,53 @@ def print_comparison(
     print(f"{'=' * 60}\n")
 
 
-def report(log_file: str = "mvlm_results.json") -> None:
-    if not os.path.exists(log_file):
+def get_all_projects() -> list[str]:
+    if not DATA_DIR.exists():
+        return []
+    projects = []
+    for f in sorted(DATA_DIR.glob("*.json")):
+        projects.append(f.stem)
+    return projects
+
+
+def get_project_data(project: str) -> list[dict]:
+    log_file = _get_project_file(project)
+    if not log_file.exists():
+        return []
+    try:
+        return json.loads(log_file.read_text())
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def report(project: str | None = None) -> None:
+    if project:
+        projects = [project]
+    else:
+        projects = get_all_projects()
+
+    if not projects:
         print("No results found. Run some comparisons first.")
         return
 
-    with open(log_file) as f:
-        entries = json.load(f)
+    for proj in projects:
+        entries = get_project_data(proj)
+        if not entries:
+            continue
 
-    candidates: dict[str, list[float]] = {}
-    for entry in entries:
-        name = entry["candidate"]
-        score = entry.get("score")
-        if score is not None:
-            candidates.setdefault(name, []).append(score)
+        candidates: dict[str, list[float]] = {}
+        for entry in entries:
+            name = entry["candidate"]
+            score = entry.get("score")
+            if score is not None:
+                candidates.setdefault(name, []).append(score)
 
-    print(f"\n{'=' * 60}")
-    print(f"mvlm summary — {len(entries)} comparisons")
-    print(f"{'=' * 60}")
+        print(f"\n{'=' * 60}")
+        print(f"mvlm summary — project: {proj} ({len(entries)} comparisons)")
+        print(f"{'=' * 60}")
 
-    for name, scores in sorted(candidates.items()):
-        avg = sum(scores) / len(scores)
-        print(f"  {name}: {avg * 100:.1f}% avg match ({len(scores)} calls)")
+        for name, scores in sorted(candidates.items()):
+            avg = sum(scores) / len(scores)
+            print(f"  {name}: {avg * 100:.1f}% avg match ({len(scores)} calls)")
 
-    print(f"{'=' * 60}\n")
+        print(f"{'=' * 60}\n")

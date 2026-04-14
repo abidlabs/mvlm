@@ -12,6 +12,8 @@ class CandidateResult:
     content: str | None = None
     error: str | None = None
     latency_ms: float = 0.0
+    input_tokens: int = 0
+    output_tokens: int = 0
 
 
 def _is_local_url(url: str) -> bool:
@@ -44,7 +46,14 @@ def _run_openai_compat(
         )
         content = response.choices[0].message.content
         elapsed = (time.monotonic() - start) * 1000
-        return CandidateResult(candidate=candidate, content=content, latency_ms=elapsed)
+        usage = getattr(response, "usage", None)
+        return CandidateResult(
+            candidate=candidate,
+            content=content,
+            latency_ms=elapsed,
+            input_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+            output_tokens=getattr(usage, "completion_tokens", 0) or 0,
+        )
     except Exception as e:
         elapsed = (time.monotonic() - start) * 1000
         return CandidateResult(candidate=candidate, error=str(e), latency_ms=elapsed)
@@ -67,7 +76,14 @@ def _run_hf_inference(
         response = client.chat_completion(messages=messages)
         content = response.choices[0].message.content
         elapsed = (time.monotonic() - start) * 1000
-        return CandidateResult(candidate=candidate, content=content, latency_ms=elapsed)
+        usage = getattr(response, "usage", None)
+        return CandidateResult(
+            candidate=candidate,
+            content=content,
+            latency_ms=elapsed,
+            input_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+            output_tokens=getattr(usage, "completion_tokens", 0) or 0,
+        )
     except Exception as e:
         elapsed = (time.monotonic() - start) * 1000
         return CandidateResult(candidate=candidate, error=str(e), latency_ms=elapsed)

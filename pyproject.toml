@@ -20,6 +20,9 @@ classifiers = [
 ]
 dynamic = ["version"]
 
+[project.scripts]
+mvlm = "mvlm.cli:main"
+
 [project.urls]
 homepage = "https://github.com/your-org/mvlm"
 repository = "https://github.com/your-org/mvlm"
