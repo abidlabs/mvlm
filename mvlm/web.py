@@ -49,7 +49,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     border-radius: 3px;
     padding: 14px 18px;
     min-width: 140px;
-    filter: url(#sketchy);
   }
   .metric-card .label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
   .metric-card .value { font-size: 28px; margin-top: 2px; }
@@ -62,7 +61,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     padding: 14px 18px;
     min-width: 220px;
     flex: 1;
-    filter: url(#sketchy);
   }
   .chart-card .chart-title { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
   .bar-row { display: flex; align-items: center; margin-bottom: 6px; }
@@ -86,18 +84,21 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     border-collapse: collapse;
     background: #fffef8;
     border: 2.5px solid #333;
-    filter: url(#sketchy);
+    font-family: Arial, Helvetica, sans-serif;
   }
   th {
-    background: #f5f0e0;
+    background: #faf8f0;
     text-align: left;
     padding: 10px 14px;
+    height: 72px;
     font-size: 13px;
+    line-height: 1.15;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: #555;
     border-bottom: 2.5px solid #333;
     border-right: 1.5px solid #ccc;
+    vertical-align: middle;
   }
   th:last-child { border-right: none; }
   td {
@@ -109,7 +110,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   }
   td:last-child { border-right: none; }
   .cell-header {
-    background: #f5f0e0;
+    background: #faf8f0;
     padding: 6px 12px;
     font-size: 12px;
     color: #555;
@@ -120,17 +121,26 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     align-items: center;
   }
   .cell-header .score-badge {
-    padding: 1px 6px;
+    padding: 0 6px;
     border-radius: 2px;
     font-size: 12px;
+    line-height: 1.2;
   }
   .cell-header .score-badge.score-100 { background: #e6f4ea; color: #2a9d3e; }
   .cell-header .score-badge.score-high { background: #eef6e1; color: #5a9e1a; }
   .cell-header .score-badge.score-mid { background: #fef3e0; color: #d4740a; }
   .cell-header .score-badge.score-low { background: #fde8e8; color: #c92a2a; }
+  .model-link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .model-link:hover {
+    text-decoration: underline;
+  }
   .cell-body {
     padding: 8px 12px;
     font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     white-space: pre-wrap;
     word-break: break-word;
     min-height: 32px;
@@ -145,13 +155,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-
-<svg class="filters" xmlns="http://www.w3.org/2000/svg">
-  <filter id="sketchy">
-    <feTurbulence type="turbulence" baseFrequency="0.015" numOctaves="3" seed="2" result="turbulence"/>
-    <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-</svg>
 
 <div class="sidebar">
   <h1>mvlm</h1>
@@ -190,6 +193,19 @@ function barColor(pct) {
 }
 
 function esc(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function isOpenModel(model) {
+  return !(model.startsWith('http://') || model.startsWith('https://'));
+}
+
+function modelHeaderHtml(model, isBaseline = false) {
+  const label = esc(model);
+  if (isBaseline || !isOpenModel(model)) {
+    return `<span>${label}</span>`;
+  }
+  const href = `https://huggingface.co/${encodeURI(model)}`;
+  return `<a class="model-link" href="${href}" target="_blank" rel="noreferrer noopener">${label}</a>`;
+}
 
 function compareTag(val, baseVal, unit) {
   if (!baseVal || !val || baseVal === 0) return '';
@@ -348,7 +364,9 @@ function renderProject(name) {
 
   const modelCols = [baselineModel, ...candOrder];
   let thHtml = '<th class="time-col">Time</th>';
-  modelCols.forEach(m => { thHtml += `<th>${esc(m)}</th>`; });
+  modelCols.forEach((m, idx) => {
+    thHtml += `<th>${modelHeaderHtml(m, idx === 0)}</th>`;
+  });
 
   let rowsHtml = '';
   const queries = Object.values(queryMap).sort((a,b) => b.timestamp.localeCompare(a.timestamp));

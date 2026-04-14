@@ -81,6 +81,10 @@ mvlm show
 
 Opens a web dashboard with projects in the sidebar, a results table with truncation for long outputs, latency and cost per model, and aggregate match rates. The image above shows the UI, which you can reproduce by cloning this repo and running: `python examples/demo_dashboard.py`
 
+<p align="center">
+  <img alt="mvlm dashboard screenshot" src="assets/screenshot.png" width="75%" />
+</p>
+
 ## Roadmap
 
 - LLM as judge
