@@ -79,6 +79,11 @@ mvlm show
 
 Opens a web dashboard with projects in the sidebar, a results table with truncation for long outputs, latency and cost per model, and aggregate match rates.
 
+## Roadmap
+
+- LLM as judge
+- Fine tune models on outputs
+
 ## License
 
 MIT
