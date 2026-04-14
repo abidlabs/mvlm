@@ -1,14 +1,9 @@
 <p align="center">
-<picture>
-  <img width="75%" alt="mvlm logo" src="assets/logo.svg">
-</picture>
-
-<strong>Quickly find the minimum viable language model for your task, for faster and cheaper intelligence</strong>
-  
+  <img width="75%" alt="mvlm logo" src="assets/logo.svg" /><br>
+ <b>Quickly find the minimum viable language model for your task, for faster and cheaper intelligence</b>
 </p>
 
 
-<div align="center">
 
 ## Install
 
