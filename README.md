@@ -3,6 +3,7 @@
  <b>Quickly find the minimum viable language model for your task, for faster and cheaper intelligence</b>
 </p>
 
+The basic idea is to run your OpenAI/Anthropic API queries to other, smaller models on Hugging Face API (or local), allowing you to quickly find the smallest/cheapest/fastest model that would work for your use case.
 
 
 ## Install
@@ -15,6 +16,8 @@ pip install mvlm[all]          # both
 
 ## Usage
 
+Install `openai` from `mvlm` and then write your code as normal!
+
 ```python
 from mvlm import openai
 
@@ -23,7 +26,7 @@ client = openai.OpenAI(
     project="my-classifier",  # organizes results by project
 )
 
-# By default, replays to 3 models: Phi-3.5-mini, Mistral-7B, Llama-3.1-70B
+# By default, replays to 3 models of different sizes on HF Inference API
 result = client.chat.completions.create(
     model="gpt-4o",
     messages=[{"role": "user", "content": "Classify as positive/negative: I love this!"}],
