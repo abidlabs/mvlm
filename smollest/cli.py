@@ -6,7 +6,7 @@ import sys
 def main():
     args = sys.argv[1:]
     if not args or args[0] == "show":
-        from mvlm.web import show
+        from smollest.web import show
 
         port = 8765
         if len(args) > 1:
@@ -16,7 +16,7 @@ def main():
                 pass
         show(port=port)
     elif args[0] == "report":
-        from mvlm.results import report
+        from smollest.results import report
 
         project = args[1] if len(args) > 1 else None
         report(project=project)

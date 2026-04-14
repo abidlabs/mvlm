@@ -1,5 +1,5 @@
-import mvlm
+import smollest
 
 
 def test_basic():
-    assert mvlm.__version__
+    assert smollest.__version__

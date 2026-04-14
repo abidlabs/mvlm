@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from mvlm.compare import ComparisonResult
+from smollest.compare import ComparisonResult
 
 DATA_DIR = Path.home() / ".smollest"
-LEGACY_DATA_DIR = Path.home() / ".mvlm"
 
 
 def _get_project_file(project: str) -> Path:
@@ -96,28 +94,22 @@ def print_comparison(
 
 
 def get_all_projects() -> list[str]:
-    if not DATA_DIR.exists() and not LEGACY_DATA_DIR.exists():
+    if not DATA_DIR.exists():
         return []
     projects = []
-    for root in (LEGACY_DATA_DIR, DATA_DIR):
-        if not root.exists():
-            continue
-        for f in sorted(root.glob("*.json")):
-            projects.append(f.stem)
-    return sorted(set(projects))
+    for f in sorted(DATA_DIR.glob("*.json")):
+        projects.append(f.stem)
+    return projects
 
 
 def get_project_data(project: str) -> list[dict]:
-    for root in (DATA_DIR, LEGACY_DATA_DIR):
-        safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in project)
-        log_file = root / f"{safe_name}.json"
-        if not log_file.exists():
-            continue
-        try:
-            return json.loads(log_file.read_text())
-        except (json.JSONDecodeError, OSError):
-            return []
-    return []
+    log_file = _get_project_file(project)
+    if not log_file.exists():
+        return []
+    try:
+        return json.loads(log_file.read_text())
+    except (json.JSONDecodeError, OSError):
+        return []
 
 
 def report(project: str | None = None) -> None:

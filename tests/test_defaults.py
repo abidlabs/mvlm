@@ -1,4 +1,4 @@
-from mvlm.defaults import estimate_cost
+from smollest.defaults import estimate_cost
 
 
 def test_known_model_cost():

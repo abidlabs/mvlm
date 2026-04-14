@@ -3,10 +3,10 @@ from __future__ import annotations
 import os
 import time
 
-from mvlm.candidates import run_candidates
-from mvlm.compare import ComparisonResult, compare_outputs
-from mvlm.defaults import DEFAULT_CANDIDATES, estimate_cost
-from mvlm.results import log_result, print_comparison
+from smollest.candidates import run_candidates
+from smollest.compare import ComparisonResult, compare_outputs
+from smollest.defaults import DEFAULT_CANDIDATES, estimate_cost
+from smollest.results import log_result, print_comparison
 
 
 class _Completions:

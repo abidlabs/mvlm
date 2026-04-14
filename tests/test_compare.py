@@ -1,4 +1,4 @@
-from mvlm.compare import compare_outputs
+from smollest.compare import compare_outputs
 
 
 def test_exact_match():

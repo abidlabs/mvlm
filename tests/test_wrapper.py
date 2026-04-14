@@ -19,7 +19,7 @@ def test_openai_wrapper_returns_original(mock_openai_cls):
     expected = _make_openai_response('{"sentiment": "positive"}')
     mock_client.chat.completions.create.return_value = expected
 
-    from mvlm.openai import OpenAI
+    from smollest.openai import OpenAI
 
     client = OpenAI(candidates=[], api_key="test")
     result = client.chat.completions.create(
@@ -37,10 +37,10 @@ def test_openai_wrapper_calls_candidates(mock_openai_cls):
     baseline_response = _make_openai_response('{"sentiment": "positive"}')
     mock_client.chat.completions.create.return_value = baseline_response
 
-    from mvlm.openai import OpenAI
+    from smollest.openai import OpenAI
 
-    with patch("mvlm.openai.run_candidates") as mock_run:
-        from mvlm.candidates import CandidateResult
+    with patch("smollest.openai.run_candidates") as mock_run:
+        from smollest.candidates import CandidateResult
 
         mock_run.return_value = [
             CandidateResult(
@@ -69,8 +69,8 @@ def test_openai_wrapper_uses_default_candidates(mock_openai_cls):
     mock_client = MagicMock()
     mock_openai_cls.return_value = mock_client
 
-    from mvlm.defaults import DEFAULT_CANDIDATES
-    from mvlm.openai import OpenAI
+    from smollest.defaults import DEFAULT_CANDIDATES
+    from smollest.openai import OpenAI
 
     client = OpenAI(api_key="test")
     assert client._candidates == DEFAULT_CANDIDATES
@@ -84,10 +84,10 @@ def test_openai_wrapper_per_call_candidates(mock_openai_cls):
     baseline_response = _make_openai_response('{"a": "b"}')
     mock_client.chat.completions.create.return_value = baseline_response
 
-    from mvlm.openai import OpenAI
+    from smollest.openai import OpenAI
 
-    with patch("mvlm.openai.run_candidates") as mock_run:
-        from mvlm.candidates import CandidateResult
+    with patch("smollest.openai.run_candidates") as mock_run:
+        from smollest.candidates import CandidateResult
 
         mock_run.return_value = [
             CandidateResult(
@@ -112,7 +112,7 @@ def test_openai_wrapper_proxies_attributes(mock_openai_cls):
     mock_client.models = MagicMock()
     mock_openai_cls.return_value = mock_client
 
-    from mvlm.openai import OpenAI
+    from smollest.openai import OpenAI
 
     client = OpenAI(candidates=[], api_key="test")
     _ = client.models

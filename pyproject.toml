@@ -21,8 +21,7 @@ classifiers = [
 dynamic = ["version"]
 
 [project.scripts]
-smollest = "mvlm.cli:main"
-mvlm = "mvlm.cli:main"
+smollest = "smollest.cli:main"
 
 [project.urls]
 homepage = "https://github.com/abidlabs/mvlm"
@@ -40,10 +39,10 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["mvlm", "smollest"]
+packages = ["smollest"]
 
 [tool.hatch.version]
-path = "mvlm/package.json"
+path = "smollest/package.json"
 pattern = ".*\"version\":\\s*\"(?P<version>[^\"]+)\""
 
 [tool.ruff]

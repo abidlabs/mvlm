@@ -5,7 +5,7 @@ import threading
 import webbrowser
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-from mvlm.results import get_all_projects, get_project_data
+from smollest.results import get_all_projects, get_project_data
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
