@@ -1,5 +1,5 @@
 """
-Demo: seeds fake comparison data and opens the mvlm dashboard.
+Demo: seeds fake comparison data and opens the smollest dashboard.
 No API keys needed.
 
     python examples/demo_dashboard.py
@@ -10,8 +10,8 @@ import random
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from mvlm.results import DATA_DIR
-from mvlm.web import show
+from smollest.results import DATA_DIR
+from smollest.web import show
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 

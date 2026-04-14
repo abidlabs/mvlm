@@ -3,13 +3,13 @@ Basic example: compare GPT-4o against smaller models for a classification task.
 
 Requires: OPENAI_API_KEY and HF_TOKEN environment variables.
 
-    pip install mvlm[openai]
+    pip install smollest[openai]
     export OPENAI_API_KEY=sk-...
     export HF_TOKEN=hf_...
     python examples/basic_openai.py
 """
 
-from mvlm import openai
+from smollest import openai
 
 client = openai.OpenAI(project="sentiment-classifier")
 
@@ -32,4 +32,4 @@ for prompt in prompts:
     )
     print(f"Baseline response: {result.choices[0].message.content}\n")
 
-print("Done! Run 'mvlm show' to view the dashboard.")
+print("Done! Run 'smollest show' to view the dashboard.")

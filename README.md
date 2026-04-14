@@ -23,7 +23,7 @@ pip install smollest[all]          # both
 Install `openai` from `smollest` and then write your code as normal!
 
 ```python
-from mvlm import openai
+from smollest import openai
 
 client = openai.OpenAI(
     api_key="sk-...",
@@ -56,7 +56,7 @@ result = client.chat.completions.create(
 Works the same way with Anthropic:
 
 ```python
-from mvlm import anthropic
+from smollest import anthropic
 
 client = anthropic.Anthropic(project="my-classifier")
 result = client.messages.create(
@@ -71,7 +71,7 @@ result = client.messages.create(
 1. Your API call goes to the baseline model as normal
 2. The same prompt is replayed to each candidate (HuggingFace serverless or local OpenAI-compatible server)
 3. Structured outputs (JSON) are compared field-by-field via exact match
-4. Results are printed to console and logged to `~/.mvlm/`
+4. Results are printed to console and logged to `~/.smollest/`
 
 Remote candidates run in parallel; local candidates run sequentially.
 
@@ -86,8 +86,9 @@ Opens a web dashboard with projects in the sidebar, a results table with truncat
 
 ## Roadmap
 
-- LLM as judge
-- Fine tune models on outputs
+- Allow adding additional models directly through the UI
+- Add LLM as judge to score outputs that are not structured
+- Let developers eaisly fine tune models on outputs
 
 ## License
 
