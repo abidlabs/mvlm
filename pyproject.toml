@@ -1,0 +1,73 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mvlm"
+description = "Minimum Viable Language Model — find the smallest LLM that works for your task"
+authors = [
+    { name = "Your Name", email = "your.email@example.com" },
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "huggingface-hub>=0.20.0",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://github.com/your-org/mvlm"
+repository = "https://github.com/your-org/mvlm"
+
+[project.optional-dependencies]
+openai = ["openai>=1.0.0"]
+anthropic = ["anthropic>=0.20.0"]
+all = ["openai>=1.0.0", "anthropic>=0.20.0"]
+dev = [
+    "ruff==0.9.3",
+    "pytest>=8.0.0,<9.0.0",
+    "openai>=1.0.0",
+    "anthropic>=0.20.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["mvlm"]
+
+[tool.hatch.version]
+path = "mvlm/package.json"
+pattern = ".*\"version\":\\s*\"(?P<version>[^\"]+)\""
+
+[tool.ruff]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+line-length = 88
+indent-width = 4
+
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+fixable = ["ALL"]
+
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
