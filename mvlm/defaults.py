@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 DEFAULT_CANDIDATES = [
-    "microsoft/Phi-3.5-mini-instruct",
-    "mistralai/Mistral-7B-Instruct-v0.3",
-    "meta-llama/Meta-Llama-3.1-70B-Instruct",
+    "Qwen/Qwen3.5-3B-Instruct",
+    "mistralai/Mistral-Small-24B-Instruct-2501",
+    "meta-llama/Llama-4-Scout-17B-16E-Instruct",
 ]
 
 COST_PER_1M_TOKENS: dict[str, dict[str, float]] = {

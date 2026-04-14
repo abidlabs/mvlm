@@ -16,9 +16,9 @@ from mvlm.web import show
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 candidates = [
-    "microsoft/Phi-3.5-mini-instruct",
-    "mistralai/Mistral-7B-Instruct-v0.3",
-    "meta-llama/Meta-Llama-3.1-70B-Instruct",
+    "Qwen/Qwen3.5-3B-Instruct",
+    "mistralai/Mistral-Small-24B-Instruct-2501",
+    "meta-llama/Llama-4-Scout-17B-16E-Instruct",
 ]
 
 sentiments = ["positive", "negative", "neutral"]
@@ -37,12 +37,12 @@ def make_entries(project, baseline_model, n=15):
         baseline_content = json.dumps({"sentiment": sentiment, "topic": topic})
 
         for cand in candidates:
-            if "70B" in cand:
-                match_prob = 0.9
-            elif "7B" in cand:
-                match_prob = 0.7
+            if "Scout" in cand:
+                match_prob = 0.92
+            elif "Mistral" in cand:
+                match_prob = 0.75
             else:
-                match_prob = 0.5
+                match_prob = 0.55
 
             cand_sentiment = (
                 sentiment if random.random() < match_prob else random.choice(sentiments)
@@ -72,24 +72,34 @@ def make_entries(project, baseline_model, n=15):
 
             score = len(matching) / 2
 
+            if "3B" in cand:
+                cand_lat = random.uniform(80, 200)
+                cand_cost = round(random.uniform(0.000005, 0.00005), 7)
+            elif "24B" in cand:
+                cand_lat = random.uniform(150, 400)
+                cand_cost = round(random.uniform(0.00002, 0.0002), 7)
+            else:
+                cand_lat = random.uniform(200, 500)
+                cand_cost = round(random.uniform(0.00003, 0.0003), 7)
+
             entries.append(
                 {
                     "timestamp": ts.isoformat(),
                     "project": project,
                     "baseline_model": baseline_model,
                     "baseline_content": baseline_content,
-                    "baseline_latency_ms": round(random.uniform(300, 800), 1),
+                    "baseline_latency_ms": round(random.uniform(600, 1400), 1),
                     "baseline_input_tokens": random.randint(40, 80),
                     "baseline_output_tokens": random.randint(10, 30),
-                    "baseline_cost": round(random.uniform(0.0001, 0.001), 6),
+                    "baseline_cost": round(random.uniform(0.0005, 0.002), 6),
                     "candidate": cand,
                     "candidate_content": json.dumps(
                         {"sentiment": cand_sentiment, "topic": cand_topic}
                     ),
-                    "candidate_latency_ms": round(random.uniform(500, 3000), 1),
+                    "candidate_latency_ms": round(cand_lat, 1),
                     "candidate_input_tokens": random.randint(40, 80),
                     "candidate_output_tokens": random.randint(10, 30),
-                    "candidate_cost": None,
+                    "candidate_cost": cand_cost,
                     "score": score,
                     "total_fields": 2,
                     "matching_fields": matching,
@@ -101,8 +111,8 @@ def make_entries(project, baseline_model, n=15):
 
 
 projects = {
-    "sentiment-classifier": ("gpt-4o", 20),
-    "topic-tagger": ("gpt-4o-mini", 12),
+    "sentiment-classifier": ("gpt-5.4", 20),
+    "topic-tagger": ("gpt-5.4", 12),
 }
 
 for proj, (model, n) in projects.items():

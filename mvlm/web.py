@@ -15,53 +15,151 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <title>mvlm — Minimum Viable Language Model</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; height: 100vh; background: #f5f5f5; color: #333; }
+  svg.filters { position: absolute; width: 0; height: 0; }
 
-  .sidebar { width: 240px; background: #1a1a2e; color: #eee; padding: 20px 0; overflow-y: auto; flex-shrink: 0; }
-  .sidebar h1 { font-size: 20px; padding: 0 20px 16px; border-bottom: 1px solid #333; font-weight: 600; }
-  .sidebar h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; padding: 16px 20px 8px; }
-  .sidebar a { display: block; padding: 8px 20px; color: #ccc; text-decoration: none; font-size: 14px; transition: background 0.15s; }
-  .sidebar a:hover { background: #16213e; }
-  .sidebar a.active { background: #0f3460; color: #fff; font-weight: 500; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    display: flex; height: 100vh;
+    background: #fffef8;
+    color: #333;
+  }
 
-  .main { flex: 1; overflow-y: auto; padding: 32px; }
-  .main h2 { font-size: 24px; margin-bottom: 8px; }
-  .main .subtitle { color: #666; margin-bottom: 24px; font-size: 14px; }
+  .sidebar {
+    width: 220px;
+    background: #fffef8;
+    padding: 20px 0;
+    overflow-y: auto;
+    flex-shrink: 0;
+    border-right: 2.5px solid #333;
+  }
+  .sidebar h1 { font-size: 22px; padding: 0 18px 14px; border-bottom: 2px solid #333; letter-spacing: -0.5px; }
+  .sidebar h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #888; padding: 16px 18px 6px; }
+  .sidebar a { display: block; padding: 7px 18px; color: #555; text-decoration: none; font-size: 15px; border-left: 3px solid transparent; transition: all 0.1s; }
+  .sidebar a:hover { color: #000; border-left-color: #999; }
+  .sidebar a.active { color: #000; border-left-color: #333; }
 
-  .metrics { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-  .metric-card { background: #fff; border-radius: 8px; padding: 16px 20px; min-width: 180px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  .metric-card .label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
-  .metric-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
-  .metric-card .detail { font-size: 12px; color: #666; margin-top: 2px; }
-  .green { color: #16a34a; }
-  .blue { color: #2563eb; }
-  .orange { color: #ea580c; }
+  .main { flex: 1; overflow-y: auto; padding: 32px 40px; }
+  .main h2 { font-size: 26px; margin-bottom: 4px; }
+  .main .subtitle { color: #777; margin-bottom: 24px; font-size: 14px; }
 
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  th { background: #f8f9fa; text-align: left; padding: 12px 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; border-bottom: 2px solid #e5e7eb; }
-  td { padding: 10px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; vertical-align: top; }
-  tr:hover td { background: #f8fafc; }
-  .truncate { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-  .truncate.expanded { white-space: pre-wrap; word-break: break-word; }
-  .score { font-weight: 600; }
-  .score-100 { color: #16a34a; }
-  .score-high { color: #65a30d; }
-  .score-mid { color: #ea580c; }
-  .score-low { color: #dc2626; }
-  .error-badge { background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
-  .cost { color: #666; font-size: 12px; }
-  .latency { color: #888; font-size: 12px; }
-  .empty { text-align: center; padding: 60px; color: #999; }
+  .top-row { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .metric-card {
+    background: #fffef8;
+    border: 2.5px solid #333;
+    border-radius: 3px;
+    padding: 14px 18px;
+    min-width: 140px;
+    filter: url(#sketchy);
+  }
+  .metric-card .label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+  .metric-card .value { font-size: 28px; margin-top: 2px; }
+  .metric-card .detail { font-size: 13px; color: #777; margin-top: 2px; }
+
+  .chart-card {
+    background: #fffef8;
+    border: 2.5px solid #333;
+    border-radius: 3px;
+    padding: 14px 18px;
+    min-width: 220px;
+    flex: 1;
+    filter: url(#sketchy);
+  }
+  .chart-card .chart-title { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .bar-row { display: flex; align-items: center; margin-bottom: 6px; }
+  .bar-row:last-child { margin-bottom: 0; }
+  .bar-label { width: 110px; font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 18px; background: #f0ece0; border: 1.5px solid #999; border-radius: 2px; position: relative; margin: 0 8px; }
+  .bar-fill { height: 100%; border-radius: 1px; }
+  .bar-fill.green { background: #2a9d3e; color: #2a9d3e; }
+  .bar-fill.blue { background: #3a7dd8; color: #3a7dd8; }
+  .bar-fill.orange { background: #d4740a; color: #d4740a; }
+  .bar-fill.red { background: #c92a2a; color: #c92a2a; }
+  .bar-fill.baseline-fill { background: #555; }
+  .bar-val { font-size: 12px; color: #555; min-width: 70px; text-align: right; flex-shrink: 0; white-space: nowrap; }
+
+  .green { color: #2a9d3e; }
+  .blue { color: #3a7dd8; }
+  .orange { color: #d4740a; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fffef8;
+    border: 2.5px solid #333;
+    filter: url(#sketchy);
+  }
+  th {
+    background: #f5f0e0;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #555;
+    border-bottom: 2.5px solid #333;
+    border-right: 1.5px solid #ccc;
+  }
+  th:last-child { border-right: none; }
+  td {
+    padding: 0;
+    border-bottom: 2px solid #bbb;
+    border-right: 1.5px solid #ccc;
+    font-size: 14px;
+    vertical-align: top;
+  }
+  td:last-child { border-right: none; }
+  .cell-header {
+    background: #f5f0e0;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #555;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .cell-header .score-badge {
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 12px;
+  }
+  .cell-header .score-badge.score-100 { background: #e6f4ea; color: #2a9d3e; }
+  .cell-header .score-badge.score-high { background: #eef6e1; color: #5a9e1a; }
+  .cell-header .score-badge.score-mid { background: #fef3e0; color: #d4740a; }
+  .cell-header .score-badge.score-low { background: #fde8e8; color: #c92a2a; }
+  .cell-body {
+    padding: 8px 12px;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 32px;
+    cursor: pointer;
+    max-height: 80px;
+    overflow: hidden;
+  }
+  .cell-body.expanded { max-height: none; }
+  .error-badge { background: #fff0ef; color: #c92a2a; padding: 1px 6px; border: 1.5px solid #c92a2a; border-radius: 2px; font-size: 12px; }
+  .time-col { width: 90px; padding: 10px 12px; font-size: 12px; color: #888; }
+  .empty { text-align: center; padding: 80px 20px; color: #999; font-size: 16px; }
 </style>
 </head>
 <body>
+
+<svg class="filters" xmlns="http://www.w3.org/2000/svg">
+  <filter id="sketchy">
+    <feTurbulence type="turbulence" baseFrequency="0.015" numOctaves="3" seed="2" result="turbulence"/>
+    <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
 <div class="sidebar">
   <h1>mvlm</h1>
   <h2>Projects</h2>
   <div id="project-list"></div>
 </div>
 <div class="main" id="main">
-  <div class="empty">Select a project to view results</div>
+  <div class="empty">&#8592; pick a project over there</div>
 </div>
 
 <script>
@@ -72,7 +170,7 @@ const sidebar = document.getElementById('project-list');
 const main = document.getElementById('main');
 
 function formatCost(c) {
-  if (c === null || c === undefined) return '—';
+  if (c === null || c === undefined) return '\u2014';
   if (c < 0.001) return '<$0.001';
   return '$' + c.toFixed(4);
 }
@@ -85,80 +183,222 @@ function scoreClass(s) {
   return 'score-low';
 }
 
+function barColor(pct) {
+  if (pct >= 80) return 'green';
+  if (pct >= 50) return 'orange';
+  return 'red';
+}
+
+function esc(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function compareTag(val, baseVal, unit) {
+  if (!baseVal || !val || baseVal === 0) return '';
+  const ratio = val / baseVal;
+  if (Math.abs(ratio - 1) < 0.05) return ' <span style="color:#888">(~same)</span>';
+  if (ratio < 1) {
+    const factor = baseVal / val;
+    const label = factor >= 1.95 ? factor.toFixed(1) + 'x' : Math.round((1 - ratio) * 100) + '%';
+    return ' <span style="color:#2a9d3e">(' + label + ' \u2193)</span>';
+  }
+  const factor = ratio;
+  const label = factor >= 1.95 ? factor.toFixed(1) + 'x' : Math.round((ratio - 1) * 100) + '%';
+  return ' <span style="color:#c92a2a">(' + label + ' \u2191)</span>';
+}
+
 function renderProject(name) {
   document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
   document.querySelector(`.sidebar a[data-project="${name}"]`)?.classList.add('active');
 
   const entries = DATA[name] || [];
   if (!entries.length) {
-    main.innerHTML = '<div class="empty">No results yet for this project.</div>';
+    main.innerHTML = '<div class="empty">nothing here yet. go run some comparisons!</div>';
     return;
   }
 
-  const candidates = {};
-  let totalCalls = 0;
+  const candStats = {};
+  const queryMap = {};
+  let totalQueries = 0;
+  const baselineModel = entries[0]?.baseline_model || '?';
+  const candOrder = [];
+
   entries.forEach(e => {
-    if (!candidates[e.candidate]) candidates[e.candidate] = { scores: [], latencies: [], costs: [] };
-    if (e.score !== null) candidates[e.candidate].scores.push(e.score);
-    candidates[e.candidate].latencies.push(e.candidate_latency_ms);
-    if (e.candidate_cost !== null) candidates[e.candidate].costs.push(e.candidate_cost);
-    totalCalls++;
+    if (!candStats[e.candidate]) {
+      candStats[e.candidate] = { scores: [], latencies: [], costs: [] };
+      candOrder.push(e.candidate);
+    }
+    if (e.score !== null) candStats[e.candidate].scores.push(e.score);
+    candStats[e.candidate].latencies.push(e.candidate_latency_ms);
+    if (e.candidate_cost !== null) candStats[e.candidate].costs.push(e.candidate_cost);
+
+    const key = e.timestamp;
+    if (!queryMap[key]) {
+      queryMap[key] = { timestamp: e.timestamp, baseline_content: e.baseline_content, baseline_latency_ms: e.baseline_latency_ms, baseline_cost: e.baseline_cost, candidates: {} };
+      totalQueries++;
+    }
+    queryMap[key].candidates[e.candidate] = e;
   });
 
-  const baselineModel = entries[0]?.baseline_model || '?';
-  const avgBaselineLatency = entries.reduce((s, e) => s + (e.baseline_latency_ms || 0), 0) / entries.length;
-  const totalBaselineCost = entries.reduce((s, e) => s + (e.baseline_cost || 0), 0);
+  const baselineLatencies = Object.values(queryMap).map(q => q.baseline_latency_ms || 0);
+  const avgBaselineLatency = baselineLatencies.reduce((a,b) => a+b, 0) / baselineLatencies.length;
+  const totalBaselineCost = Object.values(queryMap).reduce((s, q) => s + (q.baseline_cost || 0), 0);
 
-  let metricsHtml = `
+  let topRowHtml = `
     <div class="metric-card">
       <div class="label">Baseline</div>
       <div class="value blue">${baselineModel}</div>
-      <div class="detail">${avgBaselineLatency.toFixed(0)}ms avg · ${formatCost(totalBaselineCost)} total</div>
+      <div class="detail">${avgBaselineLatency.toFixed(0)}ms avg \u00b7 ${formatCost(totalBaselineCost)} total</div>
     </div>
     <div class="metric-card">
-      <div class="label">Total Calls</div>
-      <div class="value">${totalCalls}</div>
+      <div class="label">Queries</div>
+      <div class="value">${totalQueries}</div>
     </div>`;
 
-  for (const [cand, data] of Object.entries(candidates)) {
-    const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b,0) / data.scores.length * 100).toFixed(0) : '?';
-    const avgLat = (data.latencies.reduce((a,b)=>a+b,0) / data.latencies.length).toFixed(0);
-    const totalCost = data.costs.reduce((a,b)=>a+b,0);
-    metricsHtml += `
-      <div class="metric-card">
-        <div class="label">${cand}</div>
-        <div class="value ${Number(avg) >= 80 ? 'green' : Number(avg) >= 50 ? 'orange' : ''}">${avg}%</div>
-        <div class="detail">${avgLat}ms avg · ${formatCost(totalCost)} total</div>
+  let simBars = '';
+  let latBars = `
+    <div class="bar-row">
+      <div class="bar-label">${baselineModel}</div>
+      <div class="bar-track"><div class="bar-fill baseline-fill" style="width:100%"></div></div>
+      <div class="bar-val">${avgBaselineLatency.toFixed(0)}ms</div>
+    </div>`;
+  let costBars = `
+    <div class="bar-row">
+      <div class="bar-label">${baselineModel}</div>
+      <div class="bar-track"><div class="bar-fill baseline-fill" style="width:100%"></div></div>
+      <div class="bar-val">${formatCost(totalBaselineCost)}</div>
+    </div>`;
+
+  const allAvgLats = [avgBaselineLatency];
+  const allTotalCosts = [totalBaselineCost];
+
+  for (const cand of candOrder) {
+    const d = candStats[cand];
+    const avgLat = d.latencies.reduce((a,b)=>a+b,0) / d.latencies.length;
+    const totalCost = d.costs.reduce((a,b)=>a+b,0);
+    allAvgLats.push(avgLat);
+    allTotalCosts.push(totalCost);
+  }
+  const maxLat = Math.max(...allAvgLats);
+  const maxCost = Math.max(...allTotalCosts);
+
+  const baseLatPct = maxLat > 0 ? (avgBaselineLatency / maxLat * 100) : 0;
+  const baseCostPct = maxCost > 0 ? (totalBaselineCost / maxCost * 100) : 0;
+  latBars = `
+    <div class="bar-row">
+      <div class="bar-label">${baselineModel}</div>
+      <div class="bar-track"><div class="bar-fill baseline-fill" style="width:${baseLatPct}%"></div></div>
+      <div class="bar-val">${avgBaselineLatency.toFixed(0)}ms</div>
+    </div>`;
+  costBars = `
+    <div class="bar-row">
+      <div class="bar-label">${baselineModel}</div>
+      <div class="bar-track"><div class="bar-fill baseline-fill" style="width:${baseCostPct}%"></div></div>
+      <div class="bar-val">${formatCost(totalBaselineCost)}</div>
+    </div>`;
+
+  simBars += `
+    <div class="bar-row">
+      <div class="bar-label">${baselineModel}</div>
+      <div class="bar-track"><div class="bar-fill baseline-fill" style="width:100%"></div></div>
+      <div class="bar-val">1.00</div>
+    </div>`;
+
+  for (const cand of candOrder) {
+    const d = candStats[cand];
+    const avgScore = d.scores.length ? d.scores.reduce((a,b)=>a+b,0) / d.scores.length : 0;
+    const avgLat = d.latencies.reduce((a,b)=>a+b,0) / d.latencies.length;
+    const totalCost = d.costs.reduce((a,b)=>a+b,0);
+    const simPct = (avgScore * 100).toFixed(0);
+    const latPct = maxLat > 0 ? (avgLat / maxLat * 100) : 0;
+    const costPct = maxCost > 0 ? (totalCost / maxCost * 100) : 0;
+    const shortName = cand.split('/').pop();
+
+    simBars += `
+      <div class="bar-row">
+        <div class="bar-label" title="${esc(cand)}">${esc(shortName)}</div>
+        <div class="bar-track"><div class="bar-fill ${barColor(Number(simPct))}" style="width:${simPct}%"></div></div>
+        <div class="bar-val">${(avgScore).toFixed(2)}</div>
+      </div>`;
+    latBars += `
+      <div class="bar-row">
+        <div class="bar-label" title="${esc(cand)}">${esc(shortName)}</div>
+        <div class="bar-track"><div class="bar-fill baseline-fill" style="width:${latPct}%"></div></div>
+        <div class="bar-val">${avgLat.toFixed(0)}ms${compareTag(avgLat, avgBaselineLatency, 'ms')}</div>
+      </div>`;
+    costBars += `
+      <div class="bar-row">
+        <div class="bar-label" title="${esc(cand)}">${esc(shortName)}</div>
+        <div class="bar-track"><div class="bar-fill baseline-fill" style="width:${costPct}%"></div></div>
+        <div class="bar-val">${formatCost(totalCost)}${compareTag(totalCost, totalBaselineCost, '$')}</div>
       </div>`;
   }
 
+  topRowHtml += `
+    <div class="chart-card">
+      <div class="chart-title">Similarity</div>
+      ${simBars}
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Avg Latency</div>
+      ${latBars}
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Total Cost</div>
+      ${costBars}
+    </div>`;
+
+  const modelCols = [baselineModel, ...candOrder];
+  let thHtml = '<th class="time-col">Time</th>';
+  modelCols.forEach(m => { thHtml += `<th>${esc(m)}</th>`; });
+
   let rowsHtml = '';
-  entries.forEach((e, i) => {
-    const sc = e.score !== null ? (e.score * 100).toFixed(0) + '%' : '—';
-    const mismatch = (e.mismatched_fields || []).map(m => m.field).join(', ') || '—';
-    rowsHtml += `<tr>
-      <td>${new Date(e.timestamp).toLocaleString()}</td>
-      <td><span class="truncate" onclick="this.classList.toggle('expanded')">${(e.baseline_content || '').replace(/</g,'&lt;')}</span></td>
-      <td>${e.candidate}</td>
-      <td><span class="score ${scoreClass(e.score)}">${sc}</span></td>
-      <td class="latency">${(e.baseline_latency_ms||0).toFixed(0)}ms</td>
-      <td class="latency">${(e.candidate_latency_ms||0).toFixed(0)}ms</td>
-      <td class="cost">${formatCost(e.baseline_cost)}</td>
-      <td class="cost">${formatCost(e.candidate_cost)}</td>
-      <td>${e.error ? '<span class="error-badge">'+e.error+'</span>' : mismatch}</td>
-    </tr>`;
+  const queries = Object.values(queryMap).sort((a,b) => b.timestamp.localeCompare(a.timestamp));
+
+  queries.forEach(q => {
+    const timeStr = new Date(q.timestamp).toLocaleString();
+    let cells = `<td class="time-col">${timeStr}</td>`;
+
+    cells += `<td>
+      <div class="cell-header">
+        <span>${(q.baseline_latency_ms||0).toFixed(0)}ms</span>
+        <span>${formatCost(q.baseline_cost)}</span>
+      </div>
+      <div class="cell-body" onclick="this.classList.toggle('expanded')">${esc(q.baseline_content)}</div>
+    </td>`;
+
+    for (const cand of candOrder) {
+      const e = q.candidates[cand];
+      if (!e) {
+        cells += '<td><div class="cell-body" style="color:#999">\u2014</div></td>';
+        continue;
+      }
+      if (e.error) {
+        cells += `<td>
+          <div class="cell-header"><span class="error-badge">${esc(e.error)}</span></div>
+          <div class="cell-body" style="color:#999">\u2014</div>
+        </td>`;
+        continue;
+      }
+      const sc = e.score !== null ? (e.score * 100).toFixed(0) + '%' : '\u2014';
+      const scCls = scoreClass(e.score);
+      cells += `<td>
+        <div class="cell-header">
+          <span class="score-badge ${scCls}">${sc} match</span>
+          <span>${(e.candidate_latency_ms||0).toFixed(0)}ms</span>
+          <span>${formatCost(e.candidate_cost)}</span>
+        </div>
+        <div class="cell-body" onclick="this.classList.toggle('expanded')">${esc(e.candidate_content || e.baseline_content || '')}</div>
+      </td>`;
+    }
+
+    rowsHtml += `<tr>${cells}</tr>`;
   });
 
   main.innerHTML = `
     <h2>${name}</h2>
-    <div class="subtitle">${entries.length} comparisons · baseline: ${baselineModel}</div>
-    <div class="metrics">${metricsHtml}</div>
+    <div class="subtitle">${totalQueries} queries \u00b7 baseline: ${baselineModel}</div>
+    <div class="top-row">${topRowHtml}</div>
     <table>
-      <thead><tr>
-        <th>Time</th><th>Baseline Output</th><th>Candidate</th><th>Match</th>
-        <th>Baseline Latency</th><th>Candidate Latency</th>
-        <th>Baseline Cost</th><th>Candidate Cost</th><th>Mismatches / Errors</th>
-      </tr></thead>
+      <thead><tr>${thHtml}</tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>`;
 }
